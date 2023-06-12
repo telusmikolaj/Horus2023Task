@@ -7,7 +7,7 @@ import java.util.List;
 
 public class CompositeBlockImpl extends BlockImpl implements CompositeBlock {
 
-    private List<Block> blocks;
+    private final List<Block> blocks;
 
     public CompositeBlockImpl(List<Block> blocks) {
         this.blocks = blocks;

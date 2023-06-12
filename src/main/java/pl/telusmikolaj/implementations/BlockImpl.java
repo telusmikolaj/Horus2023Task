@@ -31,8 +31,7 @@ public class BlockImpl implements Block {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BlockImpl)) return false;
-        BlockImpl block = (BlockImpl) o;
+        if (!(o instanceof BlockImpl block)) return false;
         return Objects.equals(color, block.color) && Objects.equals(material, block.material);
     }
 

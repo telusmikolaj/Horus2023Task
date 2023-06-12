@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class Wall implements Structure {
-    private List<Block> blocks;
+    private final List<Block> blocks;
 
     public Wall() {
         this.blocks = new ArrayList<>();
@@ -18,47 +19,28 @@ public class Wall implements Structure {
 
     @Override
     public Optional<Block> findBlockByColor(String color) {
-        ArrayList<Block> resultBlock = new ArrayList<>();
-
-        findBlockByPredicate(
+        return findBlockByPredicate(
                 block -> color.equals(block.getColor()),
-                this.blocks,
-                resultBlock,
-                "Color"
-        );
-
-        if (resultBlock.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(resultBlock.get(0));
+                this.blocks
+        ).findFirst();
     }
 
     @Override
     public List<Block> findBlocksByMaterial(String material) {
-        ArrayList<Block> resultBlocks = new ArrayList<>();
-
-        findBlockByPredicate(
+        return findBlockByPredicate(
                 block -> material.equals(block.getMaterial()),
-                blocks,
-                resultBlocks,
-                "Material"
-        );
-
-        return resultBlocks;
+                this.blocks
+        ).toList();
     }
 
-    private void findBlockByPredicate(Predicate<Block> predicate, List<Block> blocks, List<Block> result, String attribute) {
-        for (Block block : blocks) {
-            if (predicate.test(block)) {
-                result.add(block);
-                if (attribute.equals("Color")) break;
-            }
-            if (isBlockComposite(block)) {
-                findBlockByPredicate(predicate, ((CompositeBlock) block).getBlocks(), result, attribute);
-            }
-        }
+    private Stream<Block> findBlockByPredicate(Predicate<Block> predicate, List<Block> blocks) {
+        return blocks.stream()
+                .flatMap(block -> isBlockComposite(block)
+                        ? Stream.concat(Stream.of(block), findBlockByPredicate(predicate, ((CompositeBlock) block).getBlocks()))
+                        : Stream.of(block))
+                .filter(predicate);
     }
+
 
     private boolean isBlockComposite(Block block) {
         return block instanceof CompositeBlock;
@@ -66,7 +48,7 @@ public class Wall implements Structure {
 
     @Override
     public int count() {
-        return blocks
+        return this.blocks
                 .stream()
                 .mapToInt(Block::getCount)
                 .sum();
